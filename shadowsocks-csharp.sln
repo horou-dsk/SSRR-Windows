@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shadowsocks-csharp4.0", "shadowsocks-csharp\shadowsocks-csharp4.0.csproj", "{0F2A0C8A-6C06-485B-AA13-AEEC19CA9637}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWPF", "MyWPF\MyWPF.csproj", "{03EE680A-1006-477F-B163-665179DAB820}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{0F2A0C8A-6C06-485B-AA13-AEEC19CA9637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F2A0C8A-6C06-485B-AA13-AEEC19CA9637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F2A0C8A-6C06-485B-AA13-AEEC19CA9637}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03EE680A-1006-477F-B163-665179DAB820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03EE680A-1006-477F-B163-665179DAB820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03EE680A-1006-477F-B163-665179DAB820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03EE680A-1006-477F-B163-665179DAB820}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

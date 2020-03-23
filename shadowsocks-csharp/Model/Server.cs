@@ -530,7 +530,18 @@ namespace Shadowsocks.Model
                 return;
             }
 
-            var result = sock.BeginConnect(server, server_port, null, null);
+            IAsyncResult result = null;
+            try
+            {
+                result = sock.BeginConnect(server, server_port, null, null);
+            }
+            catch (Exception)
+            {
+                latency = LATENCY_ERROR;
+                return;
+            }
+            
+            // Debug.WriteLine(server + ":" + server_port + "²éÑ¯ÑÓ³Ù");
             if (result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2)))
             {
                 stopwatch.Stop();
@@ -558,6 +569,7 @@ namespace Shadowsocks.Model
             {
                 latency = LATENCY_ERROR;
             }
+            Debug.WriteLine("ÑÓ³ÙÎª" + latency);
         }
     }
 }

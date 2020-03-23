@@ -14,9 +14,6 @@ using ZXing.QrCode;
 using System.Threading;
 using System.Text.RegularExpressions;
 using Shadowsocks.Util;
-using System.Net.Sockets;
-using System.Net;
-using System.Linq;
 
 namespace Shadowsocks.View {
     public class EventParams {
@@ -77,7 +74,7 @@ namespace Shadowsocks.View {
 
         public MenuViewController(ShadowsocksController controller) {
             _controller = controller;
-
+            Debug.WriteLine("初始化Menu");
             LoadMenu();
 
             _controller.ToggleModeChanged += controller_ToggleModeChanged;
@@ -111,10 +108,12 @@ namespace Shadowsocks.View {
             timerDetectVirus.Start();
 
             //this interval will change
+            // 定时检查更新订阅
             timerDelayCheckUpdate = new System.Timers.Timer(1000.0 * 10);
             timerDelayCheckUpdate.Elapsed += timerDelayCheckUpdate_Elapsed;
             timerDelayCheckUpdate.Start();
 
+            // 定时检查更新节点延迟
             timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
             timerUpdateLatency.Elapsed += timerUpdateLatency_Elapsed;
             timerUpdateLatency.Start();
@@ -148,6 +147,7 @@ namespace Shadowsocks.View {
             timerUpdateLatency.Stop();
             try {
                 Configuration configuration = _controller.GetCurrentConfiguration();
+                Debug.WriteLine("进来了查询延迟");
                 for (int i = 0; i < configuration.configs.Count; i++) {
                     var server = configuration.configs[i];
                     server.tcpingLatency();
@@ -157,8 +157,37 @@ namespace Shadowsocks.View {
             catch {
                 timerUpdateLatency.Interval = 1000.0 * 60;
             }
+            Debug.WriteLine("更新服务按钮显示");
             UpdateServersMenu();
             timerUpdateLatency.Start();
+        }
+        // 手动检查更新延迟
+        private void CheckLatency(object sender, EventArgs e)
+        {
+            var childref = new ThreadStart(UpdateLatency);
+            var childThread = new Thread(childref);
+            childThread.Start();
+        }
+
+        private void UpdateLatency()
+        {
+            try
+            {
+                var configuration = _controller.GetCurrentConfiguration();
+                foreach (var server in configuration.configs)
+                {
+                    server.tcpingLatency();
+                    Utils.ReleaseMemory();
+                }
+            }
+            catch (Exception err)
+            {
+                Debug.WriteLine("出现异常");
+                Debug.WriteLine(err);
+                // throw;
+            }
+            UpdateServersMenu();
+            ShowBalloonTip("成功", "更新延迟成功！", ToolTipIcon.Info, 10000);
         }
         void controller_Errored(object sender, System.IO.ErrorEventArgs e) {
             MessageBox.Show(e.GetException().ToString(), String.Format(I18N.GetString("Shadowsocks Error: {0}"), e.GetException().Message));
@@ -282,6 +311,8 @@ namespace Shadowsocks.View {
                     SeperatorItem = new MenuItem("-"),
                     CreateMenuItem("Edit servers...", new EventHandler(Config_Click)),
                     new MenuItem("-"),
+                    // CreateMenuItem("呵呵哒", new EventHandler(openServerNodes)),
+                    CreateMenuItem("检查更新延迟", new EventHandler(CheckLatency)),
                     CreateMenuItem("Import from file...", new EventHandler(Import_Click)),
                     CreateMenuItem("Import from clipboard SSR links...", new EventHandler(CopyAddress_Click)),
                     CreateMenuItem("Import from screen QRCode...", new EventHandler(ScanQRCodeItem_Click)),
@@ -315,6 +346,13 @@ namespace Shadowsocks.View {
                 CreateMenuItem("Quit", new EventHandler(Quit_Click))
             });
             UpdateItem.Visible = false;
+        }
+
+        private void openServerNodes(object sender, EventArgs e)
+        {
+            ServerNodes nodes = new ServerNodes();
+            nodes.Show();
+            nodes.Activate();
         }
 
         private void controller_ConfigChanged(object sender, EventArgs e) {
@@ -649,6 +687,7 @@ namespace Shadowsocks.View {
                 else {
                     latency = "[" + server.latency.ToString() + "ms]";
                 }
+                Debug.WriteLine(group_name + "   " + latency);
                 MenuItem item = new MenuItem(latency + " " + server.FriendlyName());
                 item.Tag = i;
                 item.Click += AServerItem_Click;
@@ -952,6 +991,12 @@ namespace Shadowsocks.View {
         private void EnableItem_Click(object sender, EventArgs e) {
             _controller.ToggleMode(ProxyMode.Direct);
         }
+
+        /*private void openWpfMainWindow(object sender, EventArgs e)
+        {
+            MyWPF.MainWindow wd = new MyWPF.MainWindow();
+            wd.ShowDialog();
+        }*/
 
         private void GlobalModeItem_Click(object sender, EventArgs e) {
             _controller.ToggleMode(ProxyMode.Global);

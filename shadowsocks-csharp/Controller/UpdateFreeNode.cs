@@ -22,6 +22,7 @@ namespace Shadowsocks.Controller
 
         public const string Name = "ShadowsocksR";
 
+        // 检查更新订阅节点
         public void CheckUpdate(Configuration config, ServerSubscribe subscribeTask, bool use_proxy, bool noitify)
         {
             FreeNodeResult = null;
