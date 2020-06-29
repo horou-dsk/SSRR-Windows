@@ -218,6 +218,12 @@
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="View\MenuViewController.cs" />
+    <Compile Include="View\ServerNodesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\ServerNodesForm.Designer.cs">
+      <DependentUpon>ServerNodesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\PortSettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -277,6 +283,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\ServerNodesForm.resx">
+      <DependentUpon>ServerNodesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\PortSettingsForm.resx">
       <DependentUpon>PortSettingsForm.cs</DependentUpon>

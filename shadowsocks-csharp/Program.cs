@@ -39,10 +39,11 @@ namespace Shadowsocks
                 }
             }
 
-            if (Utils.isVirusExist())
+            // 国产安全软件检查
+            /*if (Utils.isVirusExist())
             {
                 return;
-            }
+            }*/
 
             using (Mutex mutex = new Mutex(false, "Global\\ShadowsocksR_" + Application.StartupPath.GetHashCode()))
             {
