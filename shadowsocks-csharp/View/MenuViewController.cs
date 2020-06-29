@@ -128,7 +128,7 @@ namespace Shadowsocks.View
             timerDelayCheckUpdate.Start();*/
 
             // 定时检查更新节点延迟
-            timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
+            timerUpdateLatency = new System.Timers.Timer(1000.0 * 1800);
             timerUpdateLatency.Elapsed += timerUpdateLatency_Elapsed;
             timerUpdateLatency.Start();
         }
@@ -922,6 +922,7 @@ namespace Shadowsocks.View
         private void ShowNodesForm(object sender, EventArgs e)
         {
             var nodesForm = new ServerNodesForm(_controller);
+            // nodesForm.StartPosition = FormStartPosition.CenterParent;
             nodesForm.Show();
             nodesForm.Activate();
             nodesForm.BringToFront();

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Shadowsocks.Controller;
@@ -45,7 +46,9 @@ namespace Shadowsocks.View
             };
             this.listView1.Columns.Add(nodeName);
             this.listView1.MouseClick += ListView_MouseDoubleClick;
-            UpdateList();
+            var childRef = new ThreadStart(UpdateList);
+            var childThread = new Thread(childRef);
+            childThread.Start();
         }
 
         private void UpdateList()
