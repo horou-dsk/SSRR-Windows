@@ -75,6 +75,8 @@ namespace Shadowsocks.View
 
         private bool configfrom_open = false;
         private List<EventParams> eventList = new List<EventParams>();
+
+        // 延迟检查状态
         private bool checkingLatency = false;
 
         // 延迟检查线程数量
@@ -127,8 +129,8 @@ namespace Shadowsocks.View
             timerDelayCheckUpdate.Elapsed += timerDelayCheckUpdate_Elapsed;
             timerDelayCheckUpdate.Start();*/
 
-            // 定时检查更新节点延迟
-            timerUpdateLatency = new System.Timers.Timer(1000.0 * 1800);
+            // 首次延时检查更新节点延迟
+            timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
             timerUpdateLatency.Elapsed += timerUpdateLatency_Elapsed;
             timerUpdateLatency.Start();
         }
@@ -216,7 +218,7 @@ namespace Shadowsocks.View
         {
             if (checkNum == 0)
             {
-                timerUpdateLatency.Interval = 1000.0 * 60;
+                timerUpdateLatency.Interval = 1000.0 * 60 * 30;
                 Debug.WriteLine("更新服务按钮显示");
                 UpdateServersMenu();
                 timerUpdateLatency.Start();
@@ -240,6 +242,7 @@ namespace Shadowsocks.View
             }
 
             manualCheck = true;
+            checkingLatency = true;
             Configuration configuration = _controller.GetCurrentConfiguration();
             checkNum = (int)Math.Ceiling(configuration.configs.Count / (double)CHECK_NUM);
             for (int i = 0; i < configuration.configs.Count; i += CHECK_NUM)
@@ -922,7 +925,10 @@ namespace Shadowsocks.View
         private void ShowNodesForm(object sender, EventArgs e)
         {
             var nodesForm = new ServerNodesForm(_controller);
-            // nodesForm.StartPosition = FormStartPosition.CenterParent;
+            var xWidth = SystemInformation.PrimaryMonitorSize.Width;
+            var xHeight = SystemInformation.PrimaryMonitorSize.Height;
+            nodesForm.StartPosition = FormStartPosition.Manual;
+            nodesForm.Location = new Point((xWidth / 2) - (nodesForm.Width / 2), (xHeight / 2) - (nodesForm.Height / 2));
             nodesForm.Show();
             nodesForm.Activate();
             nodesForm.BringToFront();
@@ -1109,9 +1115,13 @@ namespace Shadowsocks.View
         void subScribeForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             subScribeForm = null;
-            timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
-            timerUpdateLatency.Elapsed += timerUpdateLatency_Elapsed;
-            timerUpdateLatency.Start();
+            if (timerUpdateLatency != null)
+            {
+                timerUpdateLatency.Interval = 1000.0 * 3;
+                timerUpdateLatency.Start();
+            }
+            // timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
+            // timerUpdateLatency.Elapsed += timerUpdateLatency_Elapsed;
         }
 
         private void Config_Click(object sender, EventArgs e)
