@@ -39,6 +39,7 @@ namespace Shadowsocks.View
         private UpdateChecker updateChecker;
         private UpdateFreeNode updateFreeNodeChecker;
         private UpdateSubscribeManager updateSubscribeManager;
+        private readonly object updateMenuLock = new object();
 
         private bool isBeingUsed = false;
 
@@ -125,9 +126,9 @@ namespace Shadowsocks.View
 
             //this interval will change
             // 定时检查更新订阅
-            /*timerDelayCheckUpdate = new System.Timers.Timer(1000.0 * 10);
+            timerDelayCheckUpdate = new System.Timers.Timer(1000.0 * 30);
             timerDelayCheckUpdate.Elapsed += timerDelayCheckUpdate_Elapsed;
-            timerDelayCheckUpdate.Start();*/
+            timerDelayCheckUpdate.Start();
 
             // 首次延时检查更新节点延迟
             timerUpdateLatency = new System.Timers.Timer(1000.0 * 3);
@@ -845,79 +846,82 @@ namespace Shadowsocks.View
 
         private void UpdateServersMenu()
         {
-            var items = ServersItem.MenuItems;
-            while (items[0] != SeperatorItem)
+            lock (updateMenuLock)
             {
-                items.RemoveAt(0);
-            }
-
-            Configuration configuration = _controller.GetCurrentConfiguration();
-            SortedDictionary<string, MenuItem> group = new SortedDictionary<string, MenuItem>();
-            const string def_group = "!(no group)";
-            string select_group = "";
-            for (int i = 0; i < configuration.configs.Count; i++)
-            {
-                string group_name;
-                Server server = configuration.configs[i];
-                if (string.IsNullOrEmpty(server.group))
-                    group_name = def_group;
-                else
-                    group_name = server.group;
-
-                string latency;
-                if (server.latency == Server.LATENCY_TESTING)
+                var items = ServersItem.MenuItems;
+                while (items[0] != SeperatorItem)
                 {
-                    latency = "[testing]";
-                }
-                else if (server.latency == Server.LATENCY_ERROR)
-                {
-                    latency = "[error]";
-                }
-                else if (server.latency == Server.LATENCY_PENDING)
-                {
-                    latency = "[pending]";
-                }
-                else
-                {
-                    latency = "[" + server.latency.ToString() + "ms]";
-                }
-                Debug.WriteLine(server.FriendlyName() + "   " + latency);
-                MenuItem item = new MenuItem(latency + " " + server.FriendlyName());
-                item.Tag = i;
-                item.Click += AServerItem_Click;
-                if (configuration.index == i)
-                {
-                    item.Checked = true;
-                    select_group = group_name;
+                    items.RemoveAt(0);
                 }
 
-                if (group.ContainsKey(group_name))
+                Configuration configuration = _controller.GetCurrentConfiguration();
+                SortedDictionary<string, MenuItem> group = new SortedDictionary<string, MenuItem>();
+                const string def_group = "!(no group)";
+                string select_group = "";
+                for (int i = 0; i < configuration.configs.Count; i++)
                 {
-                    group[group_name].MenuItems.Add(item);
-                }
-                else
-                {
-                    group[group_name] = new MenuItem(group_name, new MenuItem[1] { item });
-                }
-            }
-            {
-                int i = 0;
-                foreach (KeyValuePair<string, MenuItem> pair in group)
-                {
-                    if (pair.Key == def_group)
+                    string group_name;
+                    Server server = configuration.configs[i];
+                    if (string.IsNullOrEmpty(server.group))
+                        group_name = def_group;
+                    else
+                        group_name = server.group;
+
+                    string latency;
+                    if (server.latency == Server.LATENCY_TESTING)
                     {
-                        pair.Value.Text = "(empty group)";
+                        latency = "[testing]";
                     }
-                    if (pair.Key == select_group)
+                    else if (server.latency == Server.LATENCY_ERROR)
                     {
-                        pair.Value.Text = "● " + pair.Value.Text;
+                        latency = "[error]";
+                    }
+                    else if (server.latency == Server.LATENCY_PENDING)
+                    {
+                        latency = "[pending]";
                     }
                     else
                     {
-                        pair.Value.Text = "　" + pair.Value.Text;
+                        latency = "[" + server.latency.ToString() + "ms]";
                     }
-                    items.Add(i, pair.Value);
-                    ++i;
+                    Debug.WriteLine(server.FriendlyName() + "   " + latency);
+                    MenuItem item = new MenuItem(latency + " " + server.FriendlyName());
+                    item.Tag = i;
+                    item.Click += AServerItem_Click;
+                    if (configuration.index == i)
+                    {
+                        item.Checked = true;
+                        select_group = group_name;
+                    }
+
+                    if (group.ContainsKey(group_name))
+                    {
+                        group[group_name].MenuItems.Add(item);
+                    }
+                    else
+                    {
+                        group[group_name] = new MenuItem(group_name, new MenuItem[1] { item });
+                    }
+                }
+                {
+                    int i = 0;
+                    foreach (KeyValuePair<string, MenuItem> pair in group)
+                    {
+                        if (pair.Key == def_group)
+                        {
+                            pair.Value.Text = "(empty group)";
+                        }
+                        if (pair.Key == select_group)
+                        {
+                            pair.Value.Text = "● " + pair.Value.Text;
+                        }
+                        else
+                        {
+                            pair.Value.Text = "　" + pair.Value.Text;
+                        }
+                        items.Add(i, pair.Value);
+                        ++i;
+                    }
                 }
             }
         }
